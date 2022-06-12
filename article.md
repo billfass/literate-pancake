@@ -36,3 +36,4 @@ a = 42
 def bar(x):
     print(x)
 ```
+# Descriptors
