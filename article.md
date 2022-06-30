@@ -29,10 +29,10 @@ header-includes: |
 En python, les descripteurs sont des méthodes d'un objet qui permettent de protéger un attribut des modifications ou pour mettre à jour automatiquement les valeurs d'un attribut dépendant. Ils sont introduits à partir de Python 2.2. Leur utilisation permettent surtout d'améliorer la qualité du code Python, car à la base, Python n'a pas de concept de variables privées et les descripteurs sont considéré comme un moyen d'obtenir quelque chose de similaire.
 
 ## les différentes méthodes de descripteurs
-Aussi appélés les setters et les getters, les descripteurs sont au nombres de trois. Il y a \___get__, __set__ et __delete__.
+Aussi appélés les setters et les getters, les descripteurs sont au nombres de trois. Il y a `__get__`, `__set__` et `__delete__`.
 Ce sont des attributs d'objet avec un comportement de liaison, dont l'accès à l'attribut est remplacé par les instructions du descripteur. Le comportement par défaut pour l'accès aux attributs consiste à obtenir, définir ou supprimer l'attribut du dictionnaire d'un objet. Si l'une de ces méthodes est définie pour un objet, on dit qu'il s'agit d'un descripteur.
 
-### __get__
+### `__get__`
 Cette méthode est appelée pour obtenir l'attribut de la classe propriétaire ou d'une instance de cette classe. 
 
 ```python
@@ -42,7 +42,7 @@ def __get__(self, instance, owner):
 ```
 owner est toujours la classe propriétaire alors que instance est l'instance par laquelle on accède à l'attribut ou None lorsque l'on accède par la classe owner. Cette méthode doit renvoyer la valeur (calculée) de l'attribut ou lever une exception 
 
-### __set__
+### `__set__`
 Cette méthode est appelée pour définir l'attribut d'une instance de la classe propriétaire à la nouvelle valeur value.
 
 ```python
@@ -55,7 +55,7 @@ def __set__(self, instance, owner):
     raise ValueError(f"Le {self._name} ne pas être vide")
 ```
 
-### __delete__
+### `__delete__`
 Cette méthode est appelée pour supprimer l'attribut de l'instance instance de la classe propriétaire.
 
 ```python
@@ -65,7 +65,7 @@ def __delete__(self, instance):
 ```
 
 ## les types de descripteurs
-On distingue en général deux types de descripteurs à savoir le descripteur de données et le descripteur non-data. Si un objet définit à la fois __get__ et __set__, il est considéré comme un descripteur de données. Les descripteurs qui ne définissent que __get__ sont appelés descripteurs non-data. 
+On distingue en général deux types de descripteurs à savoir le descripteur de données et le descripteur non-data. Si un objet définit à la fois `__get__` et `__set__`, il est considéré comme un descripteur de données. Les descripteurs qui ne définissent que `__get__` sont appelés descripteurs non-data. 
 
 ```python
 # un exemple de descripteur de données
