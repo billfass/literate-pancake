@@ -55,7 +55,7 @@ def __set__(self, instance, owner):
     raise ValueError(f"Le {self._name} ne pas être vide")
 ```
 
-### `__delete__`
+### \_\_delete\_\_
 Cette méthode est appelée pour supprimer l'attribut de l'instance instance de la classe propriétaire.
 
 ```python
@@ -65,31 +65,31 @@ def __delete__(self, instance):
 ```
 
 ## les types de descripteurs
-On distingue en général deux types de descripteurs à savoir le descripteur de données et le descripteur non-data. Si un objet définit à la fois \_\_get\_\_ et \_\_set\_\_, il est considéré comme un descripteur de données. Les descripteurs qui ne définissent que \_\_get\_\_ sont appelés descripteurs non-data. 
+On distingue en général deux types de descripteurs à savoir le descripteur data et le descripteur non-data. Si un objet ou une classe définit à la fois \_\_get\_\_ et \_\_set\_\_, il est considéré comme un descripteur data. Les classes qui ne définissent que \_\_get\_\_ sont appelés descripteurs non-data. 
 
 ```python
-# un exemple de descripteur de données
+# un exemple de descripteur data
 class DataDescriptor : 
-    def __set_name__ (self, owner, name): 
+    def __init__ (self, name): 
         self.name = name 
 
-    def __get__ (self, instance, owner = None ): 
+    def __get__ (self): 
         return self.name 
 
-    def __set__ (self, instance, value): 
+    def __set__ (self, value): 
         self.name = value
 ```
 
 ```python
 # un exemple de descripteur de non-data
-class DataDescriptor : 
-    def __set_name__ (self, owner, name): 
+class NonDataDescriptor : 
+    def __init__ (self, name): 
         self.name = name 
 
-    def __get__ (self, instance, owner = None ): 
+    def __get__ (self): 
         return self.name 
 ```
-Les descripteurs de données et les descripteurs non-data diffèrent dans la façon dont les dérogations sont calculées en ce qui concerne les entrées du dictionnaire d'une instance. Si le dictionnaire d'une instance comporte une entrée portant le même nom qu'un descripteur de données, le descripteur de données est prioritaire. Si le dictionnaire d'une instance comporte une entrée portant le même nom qu'un descripteur non-data, l'entrée du dictionnaire a la priorité.
+Les descripteurs data et les descripteurs non-data diffèrent dans la façon dont les dérogations sont calculées en ce qui concerne les entrées du dictionnaire d'une instance. Si le dictionnaire d'une instance comporte une entrée portant le même nom qu'un descripteur data, le descripteur data est prioritaire. Si le dictionnaire d'une instance comporte une entrée portant le même nom qu'un descripteur non-data, l'entrée du dictionnaire a la priorité.
 
 ## Cas d'utilisation des descripteurs
 Supposons que nous avons une classe personne avec deux attributs comme le nom et le prénom
@@ -100,7 +100,7 @@ class Personne:
         self.nom = nom
         self.prenom = prenom
 ```
-Dans cette classe, on souhaite avoir par exemple les attributs nom et prenom comme des des chaines de caractères non vide. On pourrait, par exemple, utiliser les setter et les getter pour appliquer ces contrôles comme ceci
+Dans cette classe, on souhaite avoir par exemple les attributs nom et prenom comme des chaines de caractères non vide. On pourrait, par exemple, utiliser les setter et les getter pour appliquer ces contrôles comme ceci
 
 ```python
 class Personne:
@@ -150,9 +150,19 @@ Il me retourne très bien le message d'erreur :
 
 > Le nom ne peut pas être vide
 
-Ce code fonctionne, toutefois, il est redondant. C'est la même logique de validation qui valide les attributs. Ce code est parfait pour deux attributs, mais si la classe devrait en avoir assez qui nécessite la même logique de validation, on est alors obliger de dupliquer dans d'autres propriétés. Il n'est donc pas réutilisable. 
+Maintenant, si je le teste en mettant les valeurs correctes, il fonctionne aussi bien (l'exemple dans le code ci-dessous).
 
-Pour éviter de dupliquer la logique, nous pouvons avoir une méthode qui valide les données et réutiliser cette méthode dans d'autres propriétés. Cette approche permettra la réutilisation. Cependant, Python a une meilleure façon de résoudre ce problème en utilisant des descripteurs. Commençons par définir une classe de descripteur qui implémente trois méthodes : \_\_set_name\_\_, \_\_get\_\_ et \_\_set\_\_.
+```python
+try:
+    personne = Personne("Fassinou","Bile")
+except ValueError as e:
+    print(e)
+print(f"Bonjour, je mappelle {personne.prenom} {personne.nom}")
+```
+
+Ce code fonctionne, toutefois, il est redondant. C'est la même logique de validation qui valide les attributs. Ce code est parfait pour deux attributs, mais si la classe devrait en avoir assez qui nécessite la même logique de validation, on est alors obligé de dupliquer dans d'autres propriétés. Il n'est donc pas réutilisable. 
+
+Pour éviter de dupliquer la logique, nous pouvons avoir une méthode qui valide les données et réutiliser cette méthode dans d'autres propriétés. Cette approche permettra la réutilisation. Cependant, Python a une meilleure façon de résoudre ce problème en utilisant des descripteurs. D'abord, commençons par définir une classe descripteur qui implémente trois méthodes : \_\_set_name\_\_, \_\_get\_\_ et \_\_set\_\_.
 
 ```python
 class RequiredString:
@@ -174,3 +184,69 @@ class RequiredString:
 
         instance.__dict__[self._name] = value
 ```
+Ensuite, utilisons le descripteur RequiredString dans la classe Person :
+
+```python
+class Personne:
+    prenom = RequiredString()
+    nom = RequiredString()
+```
+
+Si on affecte une chaîne vide ou une valeur non-chaîne à l'attribut prenom, on obtient une erreur. 
+
+```python
+try:
+    personne = Personne()
+    personne.prenom = ''
+except ValueError as e:
+    print(e)
+```
+
+La bonne nouvelle ici est que nous pouvons utiliser notre descripteur RequiredString dans n'importe quelle classe avec des attributs nécessitant une valeur de chaîne non vide, c'est-à-dire les mêmes conditions de vérifications. Aussi, nous pouvons définir d'autres descripteurs pour appliquer d'autres types de données comme l'âge, l'e-mail et le téléphone. Je rappelle que ceci n'est qu'un simple des cas d'utilisation des descripteurs.
+
+Amusons-nous par exemple pour définir un descripteur pour contrôler l'email avec la bibliothèque d'expression régulière re.
+
+```python
+import re 
+class RequiredEmail:
+    def __set_name__(self, owner, email):
+        self._email = email
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        return instance.__dict__[self._email] or None
+
+    def __set__(self, instance, value):
+        regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+        if(re.search(regex,value)):  
+            print("Votre email est valide")    
+        else:  
+            print("Désolé, votre email n'est pas valide")
+
+        instance.__dict__[self._email] = value
+```
+
+```python
+class checkEmail:
+    email = RequiredEmail()
+```
+
+```python
+try:
+    myEmail = checkEmail()
+    myEmail.email = 'billfass2010@gmail.com'
+except ValueError as e:
+    print(e)
+```
+
+Ah désolé, je l'ai plaqué sans commenté. :) 
+
+Faisons quand même un rappel sur la méthode \_\_set_name\_\_. Cette méthode magique a été incluse à partir de Python 3.6, qui est automatiquement appelée lors de la création d'une classe, et elle reçoit deux paramètres : la classe et le nom de l'attribut tel qu'il apparaît défini dans la classe.
+
+```python
+def __set_name__(self, owner, name):
+    self.name = name
+```
+Et voilà ! Nous sommes à la fin de cet article et espérons que vous avez aimé. Nous restons ouvert pour toute correction, contribution et suggestion. 
