@@ -1,6 +1,6 @@
 ---
 title: |
-  "Introduction to Python modules."
+  "Introduction to Python modules : Descriptors."
 date: July, 2022
 lang: fr-FR
 urlcolor: blue
@@ -64,7 +64,7 @@ def __delete__(self, instance):
 
 ```
 
-## les types de descripteurs
+## Les types de descripteurs
 On distingue en général deux types de descripteurs à savoir le descripteur data et le descripteur non-data. Si un objet ou une classe définit à la fois \_\_get\_\_ et \_\_set\_\_, il est considéré comme un descripteur data. Les classes qui ne définissent que \_\_get\_\_ sont appelés descripteurs non-data. 
 
 ```python
@@ -247,4 +247,4 @@ Faisons quand même un rappel sur la méthode \_\_set_name\_\_. Cette méthode m
 def __set_name__(self, owner, name):
     self.name = name
 ```
-Et voilà ! Nous sommes à la fin de cet article et espérons que vous avez aimé. Nous restons ouvert pour toute correction, contribution et suggestion. 
+Et voilà ! Nous sommes à la fin de cet article et espérons que vous avez aimé. Nous restons ouvert à toute correction, contribution et suggestion. 
