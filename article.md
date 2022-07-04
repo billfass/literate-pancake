@@ -70,7 +70,7 @@ On distingue en général deux types de descripteurs à savoir le descripteur da
 ```python
 # un exemple de descripteur data
 class DataDescriptor : 
-    def __init__ (self, name): 
+    def __set_name__ (self, owner, name): 
         self.name = name 
 
     def __get__ (self): 
@@ -83,7 +83,7 @@ class DataDescriptor :
 ```python
 # un exemple de descripteur de non-data
 class NonDataDescriptor : 
-    def __init__ (self, name): 
+    def __set_name__(self, owner, name): 
         self.name = name 
 
     def __get__ (self): 
@@ -240,8 +240,6 @@ try:
 except ValueError as e:
     print(e)
 ```
-
-Ah désolé, je l'ai plaqué sans commenté. :) 
 
 Faisons quand même un rappel sur la méthode \_\_set_name\_\_. Cette méthode magique a été incluse à partir de Python 3.6, qui est automatiquement appelée lors de la création d'une classe, et elle reçoit deux paramètres : la classe et le nom de l'attribut tel qu'il apparaît défini dans la classe.
 
